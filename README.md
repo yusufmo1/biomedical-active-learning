@@ -542,6 +542,7 @@ git checkout -b feature/your-feature-name
 ## 🙏 Acknowledgments
 
 - **Queen Mary University of London** for research support
+- **Academic guidance by [Dr. M. ELBA](https://github.com/Dr-M-ELBA)**
 - **RDKit** and **Mol2vec** teams for molecular featurization tools
 - **scikit-learn** and **Optuna** communities
 - **Open source contributors** who help improve this project
