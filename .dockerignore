@@ -1,0 +1,61 @@
+# Git
+.git
+.gitignore
+.github
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.env
+
+# Jupyter
+.ipynb_checkpoints
+
+# IDE
+.vscode
+.idea
+*.swp
+.DS_Store
+
+# Testing
+.pytest_cache
+htmlcov/
+.coverage
+.tox
+
+# Documentation
+docs/_build/
+*.md
+!README.md
+
+# Large datasets (mount as volumes instead)
+data/external/
+*.h5
+*.pkl
+*.joblib
+
+# Results and logs
+results/
+logs/
+*.log
+
+# Models (mount as volumes instead)
+models/*.keras
+models/*.h5
+models/*.pkl
+
+# Temporary files
+*.tmp
+*.bak
+*~
+
+# OS
+Thumbs.db

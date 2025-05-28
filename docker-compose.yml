@@ -2,29 +2,81 @@ version: '3.8'
 
 services:
   biomedical-al:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: biomedical-al-app
     ports:
       - "8501:8501"
     volumes:
-      - ./data:/app/data
+      - ./data:/app/data:ro
       - ./results:/app/results
       - ./models:/app/models
+      - ./configs:/app/configs:ro
     environment:
       - PYTHONPATH=/app/src
       - STREAMLIT_SERVER_PORT=8501
       - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - biomedical-network
     
   jupyter:
-    build: .
-    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: biomedical-al-jupyter
+    command: >
+      bash -c "
+        jupyter notebook 
+        --ip=0.0.0.0 
+        --port=8888 
+        --no-browser 
+        --allow-root 
+        --NotebookApp.token='' 
+        --NotebookApp.password='' 
+        --NotebookApp.allow_origin='*'
+      "
     ports:
       - "8888:8888"
     volumes:
       - ./notebooks:/app/notebooks
-      - ./data:/app/data
+      - ./data:/app/data:ro
       - ./results:/app/results
-      - ./src:/app/src
+      - ./src:/app/src:ro
+      - ./configs:/app/configs:ro
     environment:
       - PYTHONPATH=/app/src
+      - JUPYTER_ENABLE_LAB=yes
     restart: unless-stopped
+    networks:
+      - biomedical-network
+      
+  # Optional: Redis for caching (if needed for large experiments)
+  redis:
+    image: redis:7-alpine
+    container_name: biomedical-al-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - biomedical-network
+    command: redis-server --appendonly yes
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  biomedical-network:
+    driver: bridge

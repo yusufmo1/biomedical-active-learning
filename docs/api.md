@@ -1355,4 +1355,164 @@ def test_dataset_loader():
 pytest tests/test_data.py -v
 ```
 
-This API documentation provides comprehensive coverage of all modules and their functionality. Each class and function includes detailed parameter descriptions, return values, and usage examples to facilitate easy integration and extension of the biomedical active learning framework.
+## Production Deployment
+
+### Docker API
+
+The entire framework is containerized for production deployment:
+
+```bash
+# Build production container
+docker build -t biomedical-al:latest .
+
+# Deploy with Docker Compose
+docker-compose up -d
+
+# API Health Check
+curl http://localhost:8501/_stcore/health
+
+# Container Management
+docker-compose logs -f biomedical-al  # View logs
+docker-compose scale biomedical-al=3  # Scale instances
+```
+
+### Streamlit Web API
+
+Interactive web application provides GUI access to all functionality:
+
+```python
+# Main application entry point
+streamlit run app.py
+
+# Available endpoints:
+# http://localhost:8501/         # Home dashboard
+# http://localhost:8501/data     # Data exploration
+# http://localhost:8501/demo     # Active learning demo
+# http://localhost:8501/results  # Results comparison
+# http://localhost:8501/predict  # Model predictions
+```
+
+### REST API Integration
+
+For programmatic access, the framework can be extended with REST endpoints:
+
+```python
+from flask import Flask, jsonify, request
+from src.active_learning.experiments import ALExperiment
+
+app = Flask(__name__)
+
+@app.route('/api/experiment', methods=['POST'])
+def run_experiment():
+    """Run active learning experiment via REST API."""
+    config = request.json
+    experiment = ALExperiment(**config)
+    results = experiment.run_experiment(
+        config['X_train'], config['y_train'],
+        config['X_test'], config['y_test'],
+        config['dataset_name']
+    )
+    return jsonify(results)
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """API health check endpoint."""
+    return jsonify({'status': 'healthy', 'version': '1.0.0'})
+```
+
+### Cloud Deployment
+
+#### AWS ECS
+```yaml
+# Deploy to AWS ECS
+task_definition:
+  family: biomedical-al
+  cpu: 1024
+  memory: 4096
+  container_definitions:
+    - name: biomedical-al
+      image: your-registry/biomedical-al:latest
+      ports: [{containerPort: 8501}]
+      healthCheck:
+        command: ["CMD-SHELL", "curl -f http://localhost:8501/_stcore/health"]
+```
+
+#### Google Cloud Run
+```bash
+# Deploy to Google Cloud Run
+gcloud run deploy biomedical-al \
+  --image gcr.io/PROJECT_ID/biomedical-al \
+  --platform managed \
+  --memory 4Gi --cpu 2 --port 8501
+```
+
+### Monitoring and Observability
+
+```python
+# Integration with monitoring systems
+import prometheus_client
+from loguru import logger
+
+# Metrics collection
+EXPERIMENT_COUNTER = prometheus_client.Counter(
+    'biomedical_al_experiments_total',
+    'Total number of experiments run'
+)
+
+REQUEST_DURATION = prometheus_client.Histogram(
+    'biomedical_al_request_duration_seconds',
+    'Time spent processing requests'
+)
+
+# Structured logging
+logger.add("logs/biomedical_al.log", rotation="500 MB", retention="10 days")
+logger.info("Experiment started", dataset="breast_cancer", strategy="qbc")
+```
+
+### Security and Authentication
+
+```python
+# API authentication example
+from functools import wraps
+import jwt
+
+def require_auth(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token or not validate_token(token):
+            return jsonify({'error': 'Unauthorized'}), 401
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/api/protected-experiment', methods=['POST'])
+@require_auth
+def protected_experiment():
+    """Authenticated experiment endpoint."""
+    return run_experiment()
+```
+
+### Performance Optimization
+
+```python
+# Caching for repeated requests
+from functools import lru_cache
+import redis
+
+# Redis cache for expensive operations
+redis_client = redis.Redis(host='localhost', port=6379, db=0)
+
+@lru_cache(maxsize=128)
+def cached_feature_extraction(smiles_hash):
+    """Cache molecular feature extraction."""
+    cached_result = redis_client.get(f"features:{smiles_hash}")
+    if cached_result:
+        return pickle.loads(cached_result)
+    
+    # Compute features if not cached
+    features = compute_features(smiles_hash)
+    redis_client.setex(f"features:{smiles_hash}", 3600, pickle.dumps(features))
+    return features
+```
+
+This API documentation provides comprehensive coverage of all modules and their functionality, from development to production deployment. Each class and function includes detailed parameter descriptions, return values, and usage examples to facilitate easy integration and extension of the biomedical active learning framework in both research and production environments.
