@@ -1,5 +1,3 @@
-Looking at your actual image assets, I'll rewrite the README to properly showcase your results with the real plots you have. Here's the full restructured README:
-
 # 🧬 Biomedical Active Learning: Achieving Superior Performance with Minimal Labels
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
