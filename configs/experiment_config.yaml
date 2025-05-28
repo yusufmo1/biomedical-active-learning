@@ -1,0 +1,39 @@
+active_learning:
+  strategies:
+    - random_forest
+    - query_by_committee
+  
+  initial_samples:
+    - first_5
+    - stratified_5
+  
+  # BBB dataset configuration
+  bbb:
+    batch_size: 20
+    n_runs: 10
+    stop_ratio: 1.0
+    max_queries: -1  # Continue until all samples queried
+    stratified_seeds: [42, 10, 50, 100]
+  
+  # Breast Cancer dataset configuration  
+  breast_cancer:
+    batch_size: 10
+    n_runs: 10
+    stop_ratio: 1.0
+    max_queries: -1
+    stratified_seeds: [42, 10, 50, 100]
+
+parallel:
+  n_jobs: -1  # Use all available cores
+  optimization_trials: 100
+  
+evaluation:
+  metrics:
+    - mcc
+    - f1_score
+    - roc_auc
+  
+  visualization:
+    save_plots: true
+    plot_format: "png"
+    dpi: 300

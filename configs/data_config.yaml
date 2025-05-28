@@ -1,0 +1,20 @@
+datasets:
+  bbb:
+    name: "Blood-Brain Barrier Penetration"
+    path: "data/raw/BBBP.xlsx"
+    features:
+      molecular_descriptors: true
+      mol2vec: true
+      mol2vec_model: "model_300dim.pkl"
+    preprocessing:
+      variance_threshold: 0.90
+      remove_constant_features: true
+      impute_missing: true
+  
+  breast_cancer:
+    name: "Breast Cancer"
+    path: "data/raw/breast-cancer.csv"
+    target_column: "diagnosis"
+    preprocessing:
+      scale_features: true
+      remove_id_columns: true
